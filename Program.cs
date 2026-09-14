@@ -1,30 +1,39 @@
-﻿ using System.Text.Json;
- using ConsumerViaCep.Models;
- using static System.Console;
+﻿using System;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
 
- WriteLine("Digite o seu CEP: ");
- ConsumerViaCep - Program.cs
-var cep = ReadLine();
-
-var enderecoUrl = $@"https://viacep.com.br/ws/{cep}/json/";
-
- WriteLine($"Realizando requisisição para o endpoint: {enderecoUrl}");
-
-var client = new HttpClient();
-
- try
+class Program
 {
-HttpResponseMessage? response = await client.GetAsync(enderecoUrl);
-response.EnsureSuccessStatusCode();
-string responseString = await response.Content.ReadAsStringAsync();
+    static async Task Main(string[] args)
+    {
+        using HttpClient httpClient = new HttpClient();
 
-Endereco? enderecoRetornadoDaApi = JsonSerializer.Deserialize<Endereco>(responseString);
-WriteLine($"CEP: {enderecoRetornadoDaApi.Cep}");
- WriteLine($"Rua: {enderecoRetornadoDaApi.Logradouro}");
- WriteLine($"Cidade: {enderecoRetornadoDaApi.Localidade}");
- }
- catch (System.Exception e)
- {
- WriteLine("Erro: " + e.InnerException);
- WriteLine("Aconteceu um erro ao consultar a api: " + e.Message);
+        string url = "https://api.adviceslip.com/advice";
+
+        try
+        {
+            string json = await httpClient.GetStringAsync(url);
+
+            using JsonDocument documento = JsonDocument.Parse(json);
+
+            string? conselho = documento
+                .RootElement
+                .GetProperty("slip")
+                .GetProperty("advice")
+                .GetString();
+
+            Console.WriteLine("Conselho de Hoje:");
+            Console.WriteLine(conselho);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Erro ao buscar conselho: " + ex.Message);
+        }
+    }
 }
+
+//O código está rodando pelo console com dotnet run mas está funcionando. Saída:
+// PS C:\Users\Raquel\OneDrive\Desktop\Desenvolvimento web\API\Api_Advice\ConsomerAdviceApi> dotnet run
+//Conselho de Hoje:
+//If you don't want something to be public, don't post it on the Internet.
